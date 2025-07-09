@@ -22,6 +22,15 @@
 # === MMKV (React Native MMKV) ===
 -keep class com.rnmmkv.** { *; }
 -dontwarn com.rnmmkv.**
+-keep class com.tencent.mmkv.** { *; }
+-dontwarn com.tencent.mmkv.**
+-keepclassmembers class com.tencent.mmkv.MMKV {
+    long nativeHandle;
+    private static *** onMMKVCRCCheckFail(***);
+    private static *** onMMKVFileLengthError(***);
+    private static *** mmkvLogImp(...);
+    private static *** onContentChangedByOuterProcess(***);
+}
 
 # === Reanimated (React Native Reanimated) ===
 -keep class com.swmansion.reanimated.** { *; }

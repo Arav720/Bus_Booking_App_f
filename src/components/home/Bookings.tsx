@@ -30,7 +30,8 @@ const Bookings = () => {
       const guestInfo = getGuestInfo();
       if (guestInfo.email) {
         setEmail(guestInfo.email);
-        setShowTickets(true);
+        // Delay showing tickets to improve perceived performance
+        setTimeout(() => setShowTickets(true), 200);
       }
     }
   }, [isGuest]);

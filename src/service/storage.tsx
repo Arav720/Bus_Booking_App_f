@@ -1,60 +1,104 @@
 import { MMKV } from 'react-native-mmkv';
 
-export const storage = new MMKV();
+// Initialize MMKV with better error handling
+let storage: MMKV;
+
+try {
+  storage = new MMKV({
+    id: 'bus-booking-storage',
+    encryptionKey: 'bus-booking-key-2025'
+  });
+} catch (error) {
+  console.error('MMKV initialization failed:', error);
+  // Fallback to default MMKV instance
+  storage = new MMKV();
+}
+
+// Helper function for safe storage operations
+const safeStorageOperation = <T>(operation: () => T, fallback: T): T => {
+  try {
+    return operation();
+  } catch (error) {
+    console.error('Storage operation failed:', error);
+    return fallback;
+  }
+};
 
 // Access Token
 export const setAccessToken = (token: string) => {
-  storage.set('accessToken', token);
+  safeStorageOperation(() => storage.set('accessToken', token), undefined);
 };
 
 export const getAccessToken = (): string | undefined => {
-  return storage.getString('accessToken') || undefined;
+  return safeStorageOperation(() => storage.getString('accessToken'), undefined);
 };
 
 export const removeAccessToken = () => {
-  storage.delete('accessToken');
+  safeStorageOperation(() => storage.delete('accessToken'), undefined);
 };
 
 // Refresh Token
 export const setRefreshToken = (token: string) => {
-  storage.set('refreshToken', token);
+  safeStorageOperation(() => storage.set('refreshToken', token), undefined);
 };
 
 export const getRefreshToken = (): string | undefined => {
-  return storage.getString('refreshToken') || undefined;
+  return safeStorageOperation(() => storage.getString('refreshToken'), undefined);
 };
 
 export const removeRefreshToken = () => {
-  storage.delete('refreshToken');
+  safeStorageOperation(() => storage.delete('refreshToken'), undefined);
 };
 
-// Guest Session Handling
+// Guest Session Handling - Optimized for faster access
 export const setGuestSession = () => {
-  storage.set('isGuest', 'true');
+  safeStorageOperation(() => storage.set('isGuest', true), undefined);
 };
 
 export const isGuestSession = (): boolean => {
-  return storage.getString('isGuest') === 'true';
+  return safeStorageOperation(() => storage.getBoolean('isGuest'), false) || false;
 };
 
 export const clearGuestSession = () => {
-  storage.delete('isGuest');
+  safeStorageOperation(() => storage.delete('isGuest'), undefined);
 };
 
-// Guest Info Storage
+// Guest Info Storage - Optimized with JSON storage
 export const setGuestInfo = (name: string, email: string) => {
-  storage.set('guestName', name);
-  storage.set('guestEmail', email);
+  const guestInfo = { name, email, timestamp: Date.now() };
+  safeStorageOperation(() => storage.set('guestInfo', JSON.stringify(guestInfo)), undefined);
 };
 
 export const getGuestInfo = (): { name?: string; email?: string } => {
-  return {
-    name: storage.getString('guestName'),
-    email: storage.getString('guestEmail'),
-  };
+  const guestInfoStr = safeStorageOperation(() => storage.getString('guestInfo'), null);
+  if (guestInfoStr) {
+    try {
+      const parsed = JSON.parse(guestInfoStr);
+      return { name: parsed.name, email: parsed.email };
+    } catch (error) {
+      console.error('Failed to parse guest info:', error);
+    }
+  }
+  return {};
 };
 
 export const clearGuestInfo = () => {
-  storage.delete('guestName');
-  storage.delete('guestEmail');
+  safeStorageOperation(() => storage.delete('guestInfo'), undefined);
 };
+
+// Add a function to check storage health
+export const checkStorageHealth = (): boolean => {
+  try {
+    const testKey = 'health_check';
+    const testValue = 'ok';
+    storage.set(testKey, testValue);
+    const retrieved = storage.getString(testKey);
+    storage.delete(testKey);
+    return retrieved === testValue;
+  } catch (error) {
+    console.error('Storage health check failed:', error);
+    return false;
+  }
+};
+
+export { storage };

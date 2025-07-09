@@ -1,7 +1,7 @@
 import { View, Text, Image, Alert } from 'react-native';
 import React, { useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getAccessToken, getRefreshToken, isGuestSession } from '../service/storage';
+import { getAccessToken, getRefreshToken, isGuestSession, checkStorageHealth } from '../service/storage';
 import { resetAndNavigate } from '../utils/NavigationUtils';
 import { refresh_token } from '../service/request/auth';
 
@@ -11,15 +11,22 @@ interface DecodedToken {
 
 const SplashScreen = () => {
   const tokenCheck = async () => {
-    const isGuest = isGuestSession();
-    const accessToken = await getAccessToken();
-    const refreshToken = await getRefreshToken();
+    // Check storage health first
+    const storageHealthy = checkStorageHealth();
+    if (!storageHealthy) {
+      console.warn('Storage health check failed, proceeding with caution');
+    }
 
-    // If user is guest, go directly to home
+    const isGuest = isGuestSession();
+    
+    // Optimize guest session check - if guest, skip token validation
     if (isGuest) {
       resetAndNavigate('HomeScreen');
       return;
     }
+
+    const accessToken = getAccessToken();
+    const refreshToken = getRefreshToken();
 
     // If user has valid tokens, check and refresh if needed
     if (accessToken && refreshToken) {
@@ -58,9 +65,10 @@ const SplashScreen = () => {
   };
 
   useEffect(() => {
+    // Reduce splash screen delay for better UX
     const timeoutId = setTimeout(() => {
       tokenCheck();
-    }, 1500);
+    }, 800);
     return () => clearTimeout(timeoutId);
   }, []);
 
