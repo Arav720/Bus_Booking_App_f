@@ -32,6 +32,15 @@
     private static *** onContentChangedByOuterProcess(***);
 }
 
+# Additional MMKV rules for release builds
+-keep class com.tencent.mmkv.MMKVLogLevel { *; }
+-keep class com.tencent.mmkv.MMKVRecoverStrategic { *; }
+-keep class com.tencent.mmkv.NativeBuffer { *; }
+-keepclassmembers class com.tencent.mmkv.NativeBuffer {
+    long pointer;
+    int size;
+}
+
 # === Reanimated (React Native Reanimated) ===
 -keep class com.swmansion.reanimated.** { *; }
 -dontwarn com.swmansion.reanimated.**

@@ -1,17 +1,27 @@
 import { MMKV } from 'react-native-mmkv';
 
-// Initialize MMKV with better error handling
+// Initialize MMKV with better error handling and compatibility
 let storage: MMKV;
 
 try {
   storage = new MMKV({
     id: 'bus-booking-storage',
-    encryptionKey: 'bus-booking-key-2025'
+    encryptionKey: 'bus-booking-key-2025',
+    // Add compatibility mode for older Android versions
+    mode: MMKV.MULTI_PROCESS_MODE,
   });
 } catch (error) {
   console.error('MMKV initialization failed:', error);
-  // Fallback to default MMKV instance
-  storage = new MMKV();
+  // Fallback to default MMKV instance without encryption
+  try {
+    storage = new MMKV({
+      id: 'bus-booking-storage-fallback',
+    });
+  } catch (fallbackError) {
+    console.error('MMKV fallback initialization failed:', fallbackError);
+    // Last resort - basic MMKV
+    storage = new MMKV();
+  }
 }
 
 // Helper function for safe storage operations

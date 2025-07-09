@@ -10,8 +10,10 @@
 
 
     
-    "generate-apk": "cd android && gradlew assembleRelease",
-    "generate-aab": "cd android && gradlew bundleRelease",
+    "generate-apk": "cd android && ./gradlew assembleRelease",
+    "generate-aab": "cd android && ./gradlew bundleRelease",
+    "clean-android": "cd android && ./gradlew clean",
+    "build-release": "cd android && ./gradlew assembleRelease --stacktrace",
     "test": "jest"
   },
   "dependencies": {

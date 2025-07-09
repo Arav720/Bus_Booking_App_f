@@ -48,15 +48,17 @@ const LoginScreen = () => {
   };
 
   const handleGuestLogin = () => {
-    // Optimized guest login - immediate navigation
+    // Optimized guest login with better UX
     setGuestSession();               // Track guest state
     removeAccessToken();            // Remove any previous login tokens
     removeRefreshToken();           // Avoid using dummy/invalid tokens
     
-    // Use immediate navigation for better UX
-    setTimeout(() => {
-      resetAndNavigate('HomeScreen');
-    }, 100);
+    // Use requestAnimationFrame for smoother transition
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        resetAndNavigate('HomeScreen');
+      }, 50);
+    });
   };
 
   return (
